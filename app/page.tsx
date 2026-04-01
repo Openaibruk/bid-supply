@@ -1,83 +1,63 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { LiveTicker } from '@/components/LiveTicker';
-import { TodaySummary } from '@/components/TodaySummary';
-import { ActiveCycles } from '@/components/ActiveCycles';
-import { WinnerFeed } from '@/components/WinnerFeed';
-import { SupplierLeaderboard } from '@/components/SupplierLeaderboard';
-import { PriceCharts } from '@/components/PriceCharts';
 import { supabase } from '@/lib/supabase';
 
 export default function Home() {
-  const [connectionHealthy, setConnectionHealthy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [bids, setBids] = useState(0);
+  const [suppliers, setSuppliers] = useState(0);
+  const [cycles, setCycles] = useState(0);
+  const [products, setProducts] = useState(0);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!supabase) return;
-    supabase
-      .from('dc_bids')
-      .select('id', { count: 'exact', head: true })
-      .then(({ error }) => setConnectionHealthy(!error));
+    async function load() {
+      const res = await Promise.all([
+        supabase.from('dc_bids').select('*', { count: 'exact', head: true }),
+        supabase.from('dc_suppliers').select('*', { count: 'exact', head: true }),
+        supabase.from('dc_bidding_cycles').select('*', { count: 'exact', head: true }),
+        supabase.from('products').select('*', { count: 'exact', head: true }),
+      ]);
+      setBids(res[0].count ?? 0);
+      setSuppliers(res[1].count ?? 0);
+      setCycles(res[2].count ?? 0);
+      setProducts(res[3].count ?? 0);
+      if (res[0].error) setErr(res[0].error.message);
+      else setReady(true);
+    }
+    load();
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#08090c]">
-      {/* Top Bar */}
-      <header className="border-b border-zinc-800/60 bg-[#08090c]/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">BS</span>
+    <div className="min-h-screen bg-[#08090c] flex items-center justify-center">
+      <div className="text-center space-y-6">
+        <h1 className="text-5xl font-bold text-white">Bid Supply</h1>
+        {err ? (
+          <p className="text-red-400 font-mono text-sm">❌ {err}</p>
+        ) : ready ? (
+          <div className="grid grid-cols-4 gap-6 max-w-2xl mx-auto mt-12">
+            <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
+              <p className="text-zinc-500 text-sm">Bids</p>
+              <p className="text-4xl font-bold text-white">{bids.toLocaleString()}</p>
             </div>
-            <h1 className="text-lg font-bold tracking-tight">Bid Supply</h1>
-            <span className="hidden sm:inline text-xs text-zinc-500">Live Bidding Dashboard</span>
+            <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
+              <p className="text-zinc-500 text-sm">Suppliers</p>
+              <p className="text-4xl font-bold text-white">{suppliers.toLocaleString()}</p>
+            </div>
+            <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
+              <p className="text-zinc-500 text-sm">Cycles</p>
+              <p className="text-4xl font-bold text-white">{cycles.toLocaleString()}</p>
+            </div>
+            <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
+              <p className="text-zinc-500 text-sm">Products</p>
+              <p className="text-4xl font-bold text-white">{products.toLocaleString()}</p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            {connectionHealthy ? (
-              <span className="flex items-center gap-1.5 text-xs text-green-400">
-                <span className="w-2 h-2 rounded-full bg-green-400 live-dot" />
-                Live
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5 text-xs text-zinc-500">
-                <span className="w-2 h-2 rounded-full bg-zinc-600" />
-                Connecting…
-              </span>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Live Ticker */}
-      <LiveTicker />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* Today Summary Cards */}
-        <TodaySummary />
-
-        {/* Middle Row: Charts + Active Cycles */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <PriceCharts />
-          </div>
-          <div>
-            <ActiveCycles />
-          </div>
-        </div>
-
-        {/* Bottom Row: Winners + Leaderboard */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <WinnerFeed />
-          <SupplierLeaderboard />
-        </div>
-
-        {/* Footer */}
-        <footer className="border-t border-zinc-800/60 pt-6 pb-8 text-center">
-          <p className="text-xs text-zinc-600">
-            Bid Supply — Real-time product bidding transparency • Powered by seller-incentive-pulse
-          </p>
-        </footer>
-      </main>
+        ) : (
+          <p className="text-zinc-500">Loading data...</p>
+        )}
+      </div>
     </div>
   );
 }
