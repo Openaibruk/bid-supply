@@ -96,12 +96,15 @@ products=Array.isArray(p)?p:[];suppliers=Array.isArray(s)?s:[];cycles=Array.isAr
 
 function render(){
 const now=new Date().getTime();
+const todayKey=new Date().toISOString().slice(0,10);
+const todayBids=bids.filter(b=>String(b.created_at).startsWith(todayKey));
 const winners=bids.filter(b=>b.is_winner);
-const uniqueProds=new Set(bids.map(b=>b.product_id));
-const uniqueSupps=new Set(bids.map(b=>b.supplier_id));
+const todayWinners=todayBids.filter(b=>b.is_winner);
+const uniqueProds=new Set(todayBids.map(b=>b.product_id));
+const uniqueSupps=new Set(todayBids.map(b=>b.supplier_id));
 const activeCycles=cycles.filter(c=>new Date(c.starts_at).getTime()<=now&&new Date(c.ends_at).getTime()>=now);
-const totalVolume=bids.reduce((s,b)=>s+(b.volume||0),0);
-const avgPrice=bids.length?Math.round(bids.reduce((s,b)=>s+b.bid_price,0)/bids.length):0;
+const totalVolume=todayBids.reduce((s,b)=>s+(b.volume||0),0);
+const avgPrice=todayBids.length?Math.round((todayBids.reduce((s,b)=>s+b.bid_price,0)/todayBids.length)*100)/100:0;
 
 // Next schedule
 let nextSchedule='';
@@ -119,14 +122,14 @@ if(bids.length)document.getElementById('ticker').style.display='block',document.
 let html='';
 
 // HERO CARD — Today's Status
-html+=`<div class="hero"><div class="hero-label">📊 Today's Status — ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div><div class="hero-value">${bids.length.toLocaleString()}</div><div class="hero-sub"><span class="hero-stat"><strong>${winners.length}</strong> winners</span><span class="hero-stat"><strong>${avgPrice}</strong> ${t('etb')} avg price</span><span class="hero-stat"><strong>${uniqueProds.size}</strong> ${t('products')}</span><span class="hero-stat"><strong>${uniqueSupps.size}</strong> ${t('suppliers')}</span><span class="hero-stat"><strong>${(totalVolume/1000).toFixed(1)}K</strong> kg volume</span><span class="hero-stat">${t('updated')} ${new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</span></div></div>`;
+html+=`<div class="hero"><div class="hero-label">📊 Today's Status — ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div><div class="hero-value">${todayBids.length.toLocaleString()}</div><div class="hero-sub"><span class="hero-stat"><strong>${todayWinners.length}</strong> winners</span><span class="hero-stat"><strong>${avgPrice||0}</strong> ${t('etb')} avg price</span><span class="hero-stat"><strong>${uniqueProds.size}</strong> ${t('products')}</span><span class="hero-stat"><strong>${uniqueSupps.size}</strong> ${t('suppliers')}</span><span class="hero-stat"><strong>${totalVolume.toLocaleString()}</strong> kg volume</span><span class="hero-stat">${t('updated')} ${new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</span></div></div>`;
 
 // Next Bid Schedule + Active Cycles Summary
 html+=nextSchedule||'';
 
 // 4 stat cards
 html+=`<div class="stats">`;
-[{icon:'📊',label:t('allBids'),val:bids.length.toLocaleString(),sub:`${winners.length} ${t('winners')}`},{icon:'📦',label:t('products'),val:uniqueProds.size.toLocaleString(),sub:`${products.length} ${t('total')}`},{icon:'👥',label:t('suppliers'),val:uniqueSupps.size.toLocaleString(),sub:`${suppliers.length} ${t('registered')}`},{icon:'⚡',label:t('cycles'),val:activeCycles.length.toString(),sub:`${cycles.length} ${t('total')}`}].map(s=>{
+[{icon:'📊',label:t('allBids'),val:todayBids.length.toLocaleString(),sub:`${todayWinners.length} ${t('winners')}`},{icon:'📦',label:t('products'),val:uniqueProds.size.toLocaleString(),sub:`${products.length} ${t('total')}`},{icon:'👥',label:t('suppliers'),val:uniqueSupps.size.toLocaleString(),sub:`${suppliers.length} ${t('registered')}`},{icon:'⚡',label:t('cycles'),val:activeCycles.length.toString(),sub:`${cycles.length} ${t('total')}`}].map(s=>{
 html+=`<div class="stat-card"><div class="stat-icon">${s.icon}</div><div class="stat-label">${s.label}</div><div class="stat-value">${s.val}</div><div class="stat-sub">${s.sub}</div></div>`;});
 html+='</div>';
 
