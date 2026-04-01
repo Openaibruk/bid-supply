@@ -78,9 +78,9 @@ footer{text-align:center;padding:24px 0;border-top:1px solid #e2e8f0;color:#cbd5
 const API='https://ckckcqszswqcyswctkab.supabase.co/rest/v1';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrY2tjcXN6c3dxY3lzd2N0a2FiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3Mjk3NjEsImV4cCI6MjA2NTMwNTc2MX0.av4gcddK_C9PO4KbzjjxwqLed2RCHVTSEhjHZt0hZAM';
 const H={apikey:KEY,Authorization:'Bearer '+KEY};
-let lang='en',bids=[],products=[],suppliers=[],cycles=[];
-const T={en:{todayBids:'Bids Today',products:'Products',suppliers:'Suppliers',cycles:'Active Cycles',winners:'Winners',latestWinners:'Recent Winners',supplierRank:'Supplier Leaderboard',bidVol:'Bid Volume (14d)',cycleProgress:'Active Cycles',nextBid:'Next Bid Schedule',allBids:'Total Bids',noData:'No data yet',etb:'ETB',remaining:'remaining',total:'total',registered:'registered',updated:'Updated',product:'Product',supplier:'Supplier',price:'Price',volume:'Volume',status:'Status',source:'Source',location:'Location',region:'Region',payment:'Payment',damage:'Damage'},
-am:{todayBids:'ዛሬ የገቡ',products:'ምርቶች',suppliers:'አቅራቢዎች',cycles:'ንቁ ዑደቶች',winners:'አሸናፊዎች',latestWinners:'የቅርብ አሸናፊዎች',supplierRank:'የአቅራቢ ደረጃ',bidVol:'የዋጋ ብዛት',cycleProgress:'ንቁ ዑደቶች',nextBid:'ቀጣይ ዋጋ ሰንጠረዥ',allBids:'ጠቅላላ ዋጋዎች',noData:'ዳታ የለም',etb:'ብር',remaining:'ቀርቷል',total:'ጠቅላላ',registered:'የተመዘገቡ',updated:'የተሻሻለ',product:'ምርት',supplier:'አቅራቢ',price:'ዋጋ',volume:'ብዛት',status:'ሁኔታ',source:'ምንጭ',location:'ቦታ',region:'ክልል',payment:'ክፍያ',damage:'ጉዳት'}};
+let lang='am',bids=[],products=[],suppliers=[],cycles=[];
+const T={en:{todayBids:'Bids Today',products:'Products',suppliers:'Suppliers',cycles:'Active Cycles',winners:'Winners',latestWinners:'Recent Winning Bids',recentBids:'Latest Live Bids',supplierRank:'Supplier Leaderboard',bidVol:'Bid Volume (14d)',cycleProgress:'Active Cycles',nextBid:'Next Bid Schedule',allBids:'Total Bids',noData:'No data yet',etb:'ETB',remaining:'remaining',total:'total',registered:'registered',updated:'Last updated',product:'Product',supplier:'Supplier',price:'Price',volume:'Volume',status:'Status',source:'Source',location:'Location',region:'Region',payment:'Payment',damage:'Damage',todayStatus:'Today’s Market Status',activeNow:'Active bidding now',todayProducts:'Products on bid today',sourceSummary:'Source Summary',cycleCompare:'Cycle & Product Comparison'},
+am:{todayBids:'ዛሬ የገቡ ዋጋዎች',products:'ምርቶች',suppliers:'አቅራቢዎች',cycles:'ንቁ ዑደቶች',winners:'አሸናፊዎች',latestWinners:'የቅርብ ጊዜ አሸናፊ ዋጋዎች',recentBids:'የቅርብ የገቡ ዋጋዎች',supplierRank:'የአቅራቢ ደረጃ',bidVol:'የ14 ቀን የዋጋ ብዛት',cycleProgress:'ንቁ የጨረታ ዑደቶች',nextBid:'ቀጣይ የጨረታ ሰንጠረዥ',allBids:'ጠቅላላ ዋጋዎች',noData:'ዳታ የለም',etb:'ብር',remaining:'ቀርቷል',total:'ጠቅላላ',registered:'የተመዘገቡ',updated:'የተሻሻለበት ጊዜ',product:'ምርት',supplier:'አቅራቢ',price:'ዋጋ',volume:'መጠን',status:'ሁኔታ',source:'ምንጭ',location:'የመጣበት ቦታ',region:'ክልል',payment:'የክፍያ ጊዜ',damage:'ጉዳት',todayStatus:'የዛሬ የገበያ ሁኔታ',activeNow:'አሁን በጨረታ ላይ',todayProducts:'ዛሬ በጨረታ ላይ ያሉ ምርቶች',sourceSummary:'የምንጭ ማጠቃለያ',cycleCompare:'የዑደት እና የምርት ንፅፅር'}};
 function t(k){return T[lang]?.[k]||k}
 function pName(id){const p=products.find(x=>+x.product_id===+id);return p?p.product_name:'#'+id}
 function sName(id){const s=suppliers.find(x=>+x.supplier_id===+id);return s?s.supplier_name:'#'+id}
@@ -122,7 +122,8 @@ if(bids.length)document.getElementById('ticker').style.display='block',document.
 let html='';
 
 // HERO CARD — Today's Status
-html+=`<div class="hero"><div class="hero-label">📊 Today's Status — ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div><div class="hero-value">${todayBids.length.toLocaleString()}</div><div class="hero-sub"><span class="hero-stat"><strong>${todayWinners.length}</strong> winners</span><span class="hero-stat"><strong>${avgPrice||0}</strong> ${t('etb')} avg price</span><span class="hero-stat"><strong>${uniqueProds.size}</strong> ${t('products')}</span><span class="hero-stat"><strong>${uniqueSupps.size}</strong> ${t('suppliers')}</span><span class="hero-stat"><strong>${totalVolume.toLocaleString()}</strong> kg volume</span><span class="hero-stat">${t('updated')} ${new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</span></div></div>`;
+const todayProductNames=[...uniqueProds].map(pid=>pName(pid)).join(', ')||'—';
+html+=`<div class="hero"><div class="hero-label">📊 ${t('todayStatus')} — ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div><div class="hero-value">${todayBids.length.toLocaleString()}</div><div class="hero-sub"><span class="hero-stat"><strong>${todayWinners.length}</strong> ${t('winners')}</span><span class="hero-stat"><strong>${avgPrice||0}</strong> ${t('etb')} avg price</span><span class="hero-stat"><strong>${uniqueProds.size}</strong> ${t('products')}</span><span class="hero-stat"><strong>${uniqueSupps.size}</strong> ${t('suppliers')}</span><span class="hero-stat"><strong>${totalVolume.toLocaleString()}</strong> kg volume</span><span class="hero-stat">${t('updated')} ${new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</span></div><div class="hero-sub" style="margin-top:10px"><span class="hero-stat"><strong>${t('activeNow')}:</strong> ${activeCycles.length?activeCycles.map(c=>c.cycle_name).join(', '):'—'}</span><span class="hero-stat"><strong>${t('todayProducts')}:</strong> ${todayProductNames}</span></div></div>`;
 
 // Next Bid Schedule + Active Cycles Summary
 html+=nextSchedule||'';
@@ -132,6 +133,36 @@ html+=`<div class="stats">`;
 [{icon:'📊',label:t('allBids'),val:todayBids.length.toLocaleString(),sub:`${todayWinners.length} ${t('winners')}`},{icon:'📦',label:t('products'),val:uniqueProds.size.toLocaleString(),sub:`${products.length} ${t('total')}`},{icon:'👥',label:t('suppliers'),val:uniqueSupps.size.toLocaleString(),sub:`${suppliers.length} ${t('registered')}`},{icon:'⚡',label:t('cycles'),val:activeCycles.length.toString(),sub:`${cycles.length} ${t('total')}`}].map(s=>{
 html+=`<div class="stat-card"><div class="stat-icon">${s.icon}</div><div class="stat-label">${s.label}</div><div class="stat-value">${s.val}</div><div class="stat-sub">${s.sub}</div></div>`;});
 html+='</div>';
+
+// Recent bids at top
+const recentBids=bids.slice(0,15);
+if(recentBids.length){
+html+=`<div class="section"><div class="section-head"><span>📋</span><span class="section-title">${t('recentBids')}</span></div><table><tr><th>${t('product')}</th><th>${t('supplier')}</th><th>${t('source')}</th><th>${t('location')}</th><th>${t('price')}</th><th>${t('damage')}</th><th>${t('payment')}</th></tr><tbody>`;
+recentBids.forEach(b=>{
+html+=`<tr><td><span class="name">${pName(b.product_id)}</span><br><span class="muted">${new Date(b.created_at).toLocaleDateString()}</span></td><td><span class="name">${sName(b.supplier_id)}</span></td><td>${b.source_name?`<span class="badge badge-loc">📍 ${b.source_name}</span>`:'<span class="muted">—</span>'}</td><td>${locLabel(b.sourcing_location)}</td><td><span class="price">${b.bid_price.toLocaleString()}</span><span class="muted"> ${t('etb')}</span></td><td>${b.damage_type?`<span class="badge badge-type">${b.damage_type}</span>`:'<span class="muted">—</span>'}</td><td><span class="muted">${b.payment_term||'—'}d</span></td></tr>`;
+});
+html+='</tbody></table></div>';}
+
+// Source summary
+const sourceAgg={};
+todayBids.forEach(b=>{const k=b.sourcing_location||'unknown'; sourceAgg[k]=(sourceAgg[k]||0)+1;});
+const sourceRows=Object.entries(sourceAgg);
+if(sourceRows.length){
+html+=`<div class="section"><div class="section-head"><span>🧭</span><span class="section-title">${t('sourceSummary')}</span></div><table><tr><th>${t('location')}</th><th style="text-align:right">${t('todayBids')}</th></tr><tbody>`;
+sourceRows.forEach(([k,v])=>{html+=`<tr><td><span class="name">${locLabel(k)}</span></td><td style="text-align:right"><span class="price">${v}</span></td></tr>`});
+html+='</tbody></table></div>';
+}
+
+// Cycle/product comparison
+const cycleName=activeCycles.length?activeCycles[0].cycle_name:'—';
+const productCompare={};
+todayBids.forEach(b=>{const k=b.product_id; if(!productCompare[k]) productCompare[k]={count:0,min:b.bid_price,max:b.bid_price}; productCompare[k].count++; productCompare[k].min=Math.min(productCompare[k].min,b.bid_price); productCompare[k].max=Math.max(productCompare[k].max,b.bid_price);});
+const compareRows=Object.entries(productCompare);
+if(compareRows.length){
+html+=`<div class="section"><div class="section-head"><span>⚖️</span><span class="section-title">${t('cycleCompare')} — ${cycleName}</span></div><table><tr><th>${t('product')}</th><th style="text-align:right">${t('todayBids')}</th><th style="text-align:right">Min</th><th style="text-align:right">Max</th></tr><tbody>`;
+compareRows.forEach(([pid,row])=>{html+=`<tr><td><span class="name">${pName(pid)}</span></td><td style="text-align:right">${row.count}</td><td style="text-align:right"><span class="price">${row.min}</span></td><td style="text-align:right"><span class="price">${row.max}</span></td></tr>`});
+html+='</tbody></table></div>';
+}
 
 // Winners table with sourcing info
 const recentWinners=winners.slice(0,10);
@@ -170,15 +201,6 @@ if(leaderboard.length){
 html+=`<div class="section"><div class="section-head"><span>🏅</span><span class="section-title">${t('supplierRank')}</span></div><table><tr><th class="medal">#</th><th>${t('supplier')}</th><th style="text-align:right">${t('allBids')}</th><th style="text-align:right">${t('wins')}</th><th style="text-align:right">${t('volume')}</th><th style="text-align:right">Win Rate</th></tr><tbody>`;
 leaderboard.forEach((r,i)=>{
 html+=`<tr><td><span class="medal">${i<3?medals[i]:i+1}</span></td><td><span class="name">${sName(r.id)}</span></td><td style="text-align:right;color:#64748b">${r.bids}</td><td style="text-align:right;color:#0f172a;font-weight:600">${r.wins}</td><td style="text-align:right;color:#64748b">${r.volume?(r.volume/1000).toFixed(1)+'K':'—'}</td><td style="text-align:right"><span style="color:#16a34a;font-weight:700">${r.rate.toFixed(0)}%</span></td></tr>`;
-});
-html+='</tbody></table></div>';}
-
-// Recent all bids
-const recentBids=bids.slice(0,15);
-if(recentBids.length){
-html+=`<div class="section"><div class="section-head"><span>📋</span><span class="section-title">Recent Bids</span></div><table><tr><th>${t('product')}</th><th>${t('supplier')}</th><th>${t('source')}</th><th>${t('location')}</th><th>${t('price')}</th><th>${t('damage')}</th><th>${t('payment')}</th></tr><tbody>`;
-recentBids.forEach(b=>{
-html+=`<tr><td><span class="name">${pName(b.product_id)}</span><br><span class="muted">${new Date(b.created_at).toLocaleDateString()}</span></td><td><span class="name">${sName(b.supplier_id)}</span></td><td>${b.source_name?`<span class="badge badge-loc">📍 ${b.source_name}</span>`:'<span class="muted">—</span>'}</td><td>${locLabel(b.sourcing_location)}</td><td><span class="price">${b.bid_price.toLocaleString()}</span><span class="muted"> ${t('etb')}</span></td><td>${b.damage_type?`<span class="badge badge-type">${b.damage_type}</span>`:'<span class="muted">—</span>'}</td><td><span class="muted">${b.payment_term||'—'}d</span></td></tr>`;
 });
 html+='</tbody></table></div>';}
 
