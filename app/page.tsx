@@ -8,12 +8,12 @@ import { WinnerFeed } from '@/components/WinnerFeed';
 import { SupplierLeaderboard } from '@/components/SupplierLeaderboard';
 import { PriceCharts } from '@/components/PriceCharts';
 import { supabase } from '@/lib/supabase';
-import Link from 'next/link';
 
 export default function Home() {
   const [connectionHealthy, setConnectionHealthy] = useState(false);
 
   useEffect(() => {
+    if (!supabase) return;
     supabase
       .from('dc_bids')
       .select('id', { count: 'exact', head: true })
