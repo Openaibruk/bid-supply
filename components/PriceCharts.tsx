@@ -6,7 +6,7 @@ import { TrendingUp } from 'lucide-react';
 import { format, subDays, parseISO } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
 
-interface PriceData {
+interface PricePoint {
   date: string;
   minPrice: number;
   maxPrice: number;
@@ -14,21 +14,26 @@ interface PriceData {
   bids: number;
 }
 
+function fmt(val: unknown) {
+  const n = typeof val === 'number' ? val : Number(val);
+  return `${Math.round(n).toLocaleString()} ETB`;
+}
+
 export function PriceCharts() {
-  const [data, setData] = useState<PriceData[]>([]);
+  const [data, setData] = useState<PricePoint[]>([]);
   const [products, setProducts] = useState<{ id: number; name: string }[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<number>(0);
 
   useEffect(() => {
-    // Fetch top products
     supabase
       .from('products')
       .select('product_id, product_name')
       .limit(10)
       .then(({ data }) => {
         if (data) {
-          setProducts(data.map(p => ({ id: p.product_id, name: p.product_name })));
-          if (data.length > 0) setSelectedProduct(data[0].product_id);
+          const ps = data.map(p => ({ id: p.product_id, name: p.product_name }));
+          setProducts(ps);
+          if (ps.length > 0) setSelectedProduct(ps[0].id);
         }
       });
   }, []);
@@ -36,12 +41,12 @@ export function PriceCharts() {
   useEffect(() => {
     if (!selectedProduct) return;
 
-    const start = subDays(new Date(), 14);
+    const start = format(subDays(new Date(), 14), 'yyyy-MM-dd');
     supabase
       .from('dc_bids')
       .select('bid_price, created_at')
       .eq('product_id', selectedProduct)
-      .gte('created_at', start.toISOString())
+      .gte('created_at', start)
       .order('created_at', { ascending: true })
       .then(({ data }) => {
         if (!data || data.length === 0) {
@@ -49,7 +54,6 @@ export function PriceCharts() {
           return;
         }
 
-        // Group by date
         const byDate: Record<string, number[]> = {};
         (data as any[]).forEach(b => {
           const date = format(parseISO(b.created_at), 'MM/dd');
@@ -57,7 +61,7 @@ export function PriceCharts() {
           byDate[date].push(b.bid_price);
         });
 
-        const result = Object.entries(byDate).map(([date, prices]) => ({
+        const result: PricePoint[] = Object.entries(byDate).map(([date, prices]) => ({
           date,
           minPrice: Math.min(...prices),
           maxPrice: Math.max(...prices),
@@ -106,7 +110,7 @@ export function PriceCharts() {
                     fontSize: '12px',
                     color: '#e0e0e0',
                   }}
-                  formatter={(value: number) => [`${Math.round(value).toLocaleString()} ETB`, '']}
+                  formatter={(value: unknown) => [fmt(value), '']}
                 />
                 <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
                 <Bar dataKey="minPrice" name="Min" fill="#6366f1" radius={[4, 4, 0, 0]} />
