@@ -1,0 +1,84 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { Calendar, Clock } from 'lucide-react';
+import { format, differenceInDays, isAfter, isBefore } from 'date-fns';
+
+interface Cycle {
+  cycle_id: string;
+  cycle_name: string;
+  starts_at: string;
+  ends_at: string;
+  status: string;
+  bid_count?: number;
+}
+
+export function ActiveCycles() {
+  const [cycles, setCycles] = useState<Cycle[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('dc_bidding_cycles')
+      .select('*')
+      .order('ends_at', { ascending: true })
+      .then(({ data, error }) => {
+        if (error || !data) return;
+        const now = new Date();
+        const active = (data as any[])
+          .filter(c => isBefore(now, new Date(c.ends_at)) && isAfter(now, new Date(c.starts_at)))
+          .slice(0, 5);
+        setCycles(active as Cycle[]);
+      });
+  }, []);
+
+  if (cycles.length === 0) {
+    return (
+      <div className="rounded-xl bg-zinc-900/60 border border-zinc-800/60 p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Calendar className="w-4 h-4 text-zinc-500" />
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Active Cycles</h2>
+        </div>
+        <p className="text-sm text-zinc-600 text-center py-8">No active cycles right now</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl bg-zinc-900/60 border border-zinc-800/60 p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Calendar className="w-4 h-4 text-indigo-400" />
+        <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Active Cycles</h2>
+      </div>
+      <div className="space-y-3">
+        {cycles.map((cycle) => {
+          const daysLeft = Math.max(0, differenceInDays(new Date(cycle.ends_at), new Date()));
+          const totalDays = differenceInDays(new Date(cycle.ends_at), new Date(cycle.starts_at));
+          const daysPassed = totalDays - daysLeft;
+          const progress = totalDays > 0 ? (daysPassed / totalDays) * 100 : 0;
+
+          return (
+            <div key={cycle.cycle_id} className="p-3 rounded-lg bg-zinc-800/40 border border-zinc-800/60">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium">{cycle.cycle_name}</p>
+                <span className="flex items-center gap-1 text-xs text-indigo-400">
+                  <Clock className="w-3 h-3" />
+                  {daysLeft}d left
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all"
+                  style={{ width: `${Math.min(100, progress)}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1">
+                {format(new Date(cycle.starts_at), 'MMM dd')} — {format(new Date(cycle.ends_at), 'MMM dd, yyyy')}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
