@@ -8,7 +8,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 interface PriceData {
   date: string;
-  product: string;
   minPrice: number;
   maxPrice: number;
   avgPrice: number;
