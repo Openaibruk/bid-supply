@@ -34,7 +34,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem('bid-supply-lang') as Locale | null;
-    if (stored) setLocaleState(stored);
+    // Default to Amharic if nothing stored
+    const initial = stored || 'am';
+    setLocaleState(initial);
   }, []);
 
   const setLocale = (l: Locale) => {

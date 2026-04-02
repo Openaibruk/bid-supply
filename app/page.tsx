@@ -1,5 +1,7 @@
 'use client';
 
+'use client';
+
 import './globals.css';
 import { useLang } from '@/contexts/LanguageContext';
 import { LiveTicker } from '@/components/LiveTicker';
@@ -9,6 +11,7 @@ import { PriceCharts } from '@/components/PriceCharts';
 import { SupplierLeaderboard } from '@/components/SupplierLeaderboard';
 import { WinnerFeed } from '@/components/WinnerFeed';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +21,9 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       {/* Live ticker */}
-      <LiveTicker />
+      <ErrorBoundary>
+        <LiveTicker />
+      </ErrorBoundary>
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200">
@@ -45,18 +50,28 @@ export default function Page() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         {/* Top summary */}
         <section>
-          <TodaySummary />
+          <ErrorBoundary>
+            <TodaySummary />
+          </ErrorBoundary>
         </section>
 
         {/* Middle grid */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <PriceCharts />
-            <ActiveCycles />
+            <ErrorBoundary>
+              <PriceCharts />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <ActiveCycles />
+            </ErrorBoundary>
           </div>
           <div className="space-y-6">
-            <WinnerFeed />
-            <SupplierLeaderboard />
+            <ErrorBoundary>
+              <WinnerFeed />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <SupplierLeaderboard />
+            </ErrorBoundary>
           </div>
         </section>
 
