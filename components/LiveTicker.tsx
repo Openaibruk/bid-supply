@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { format, subHours, parseISO } from 'date-fns';
+import { format, subHours, isToday, parseISO } from 'date-fns';
 
 interface TickerBid {
   id: string;
@@ -13,6 +13,7 @@ interface TickerBid {
   created_at: string;
 }
 
+// Fetch recent bids for the ticker
 async function fetchRecentBids(): Promise<TickerBid[]> {
   const since = subHours(new Date(), 4);
   const { data, error } = await supabase
@@ -46,45 +47,38 @@ async function fetchRecentBids(): Promise<TickerBid[]> {
 
 export function LiveTicker() {
   const [bids, setBids] = useState<TickerBid[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchRecentBids().then(setBids).finally(() => setLoading(false));
+    fetchRecentBids().then(setBids);
 
+    // Real-time subscription
     const channel = supabase
       .channel('ticker')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'dc_bids' }, () => {
-        fetchRecentBids().then(setBids);
-      })
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'dc_bids' },
+        () => { fetchRecentBids().then(setBids); }
+      )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="border-b border-slate-200 bg-slate-50 py-2 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <span className="text-xs text-slate-400">Loading live bids...</span>
-        </div>
-      </div>
-    );
-  }
-
   if (bids.length === 0) {
     return (
-      <div className="border-b border-slate-200 bg-slate-50 py-2 overflow-hidden">
+      <div className="border-b border-zinc-800/60 bg-zinc-900/30 py-2 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <span className="text-xs text-slate-400">No recent bids to display</span>
+          <span className="text-xs text-zinc-600">No recent bids to display</span>
         </div>
       </div>
     );
   }
 
+  // Duplicate bids to make the marloop seamless
   const items = [...bids, ...bids];
 
   return (
-    <div className="border-b border-slate-200 bg-slate-50 py-2 overflow-hidden">
+    <div className="border-b border-zinc-800/60 bg-zinc-900/30 py-2 overflow-hidden">
       <div
         className="flex gap-8 whitespace-nowrap"
         style={{
@@ -95,16 +89,16 @@ export function LiveTicker() {
         {items.map((bid, i) => (
           <div key={`${bid.id}-${i}`} className="flex items-center gap-2 text-sm shrink-0">
             {bid.is_winner ? (
-              <span className="text-amber-600">🏆</span>
+              <span className="text-green-400">🏆</span>
             ) : (
-              <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
             )}
-            <span className="text-slate-700 font-medium">{bid.product_name}</span>
-            <span className="text-slate-400">—</span>
-            <span className="text-slate-800">{bid.bid_price.toLocaleString()} ETB</span>
-            <span className="text-slate-300">|</span>
-            <span className="text-slate-500 text-xs">{bid.supplier_name}</span>
-            <span className="text-slate-400 text-xs">
+            <span className="text-zinc-300 font-medium">{bid.product_name}</span>
+            <span className="text-zinc-500">—</span>
+            <span className="text-zinc-300">{bid.bid_price.toLocaleString()} ETB</span>
+            <span className="text-zinc-600">|</span>
+            <span className="text-zinc-500 text-xs">{bid.supplier_name}</span>
+            <span className="text-zinc-600 text-xs">
               {format(parseISO(bid.created_at), 'HH:mm')}
             </span>
           </div>
