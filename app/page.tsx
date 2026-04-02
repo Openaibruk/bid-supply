@@ -1,3 +1,5 @@
+'use client';
+
 import './globals.css';
 import { useLang } from '@/contexts/LanguageContext';
 import { LiveTicker } from '@/components/LiveTicker';
