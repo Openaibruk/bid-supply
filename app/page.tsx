@@ -13,8 +13,6 @@ import { WinnerFeed } from '@/components/WinnerFeed';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-export const dynamic = 'force-dynamic';
-
 export default function Page() {
   const { t } = useLang();
 
