@@ -8,7 +8,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 interface PriceData {
   date: string;
-  product: string;
   minPrice: number;
   maxPrice: number;
   avgPrice: number;
@@ -107,7 +106,7 @@ export function PriceCharts() {
                     fontSize: '12px',
                     color: '#e0e0e0',
                   }}
-                  formatter={(value: number) => [`${Math.round(value).toLocaleString()} ETB`, '']}
+                  formatter={(value: any) => [`${Math.round(value).toLocaleString()} ETB`, '']}
                 />
                 <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
                 <Bar dataKey="minPrice" name="Min" fill="#6366f1" radius={[4, 4, 0, 0]} />
@@ -132,6 +131,7 @@ export function PriceCharts() {
                     fontSize: '12px',
                     color: '#e0e0e0',
                   }}
+                  formatter={(value: any) => [value, '']}
                 />
                 <Line
                   type="monotone"

@@ -5,10 +5,11 @@ import messages from '../messages.json';
 
 type Locale = 'am' | 'en';
 interface Translations {
-  [key: string]: { [K in Locale]: string };
+  am: Record<string, string>;
+  en: Record<string, string>;
 }
 
-const translations: Translations = messages;
+const translations = messages as Translations;
 
 function getLang(): Locale {
   if (typeof window !== 'undefined') {
