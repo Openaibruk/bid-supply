@@ -1,13 +1,14 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import messages from '../messages.json';
 
 type Locale = 'am' | 'en';
 interface Translations {
   [key: string]: { [K in Locale]: string };
 }
 
-const translations: Translations = require('../messages.json');
+const translations: Translations = messages;
 
 function getLang(): Locale {
   if (typeof window !== 'undefined') {
