@@ -75,7 +75,7 @@ export function ActiveCycles() {
     return (
       <div className="rounded-xl bg-white border border-slate-200 shadow-sm p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Calendar className="w-4 h-4 text-slate-500" />
+          <Calendar className="w-4 h-4 text-slate-500" aria-hidden="true" />
           <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Active Cycles</h2>
         </div>
         <div className="text-center py-8">

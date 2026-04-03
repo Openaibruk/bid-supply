@@ -100,7 +100,7 @@ export function TodaySummary() {
             </div>
             <span className="text-[11px] font-medium text-slate-600 uppercase tracking-wider">{c.label}</span>
           </div>
-          <p className="text-xl font-bold tracking-tight text-slate-900">{c.value}</p>
+          <p className="text-lg md:text-xl font-bold tracking-tight text-slate-900 break-words">{c.value}</p>
         </div>
       ))}
     </div>

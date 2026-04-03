@@ -128,7 +128,7 @@ export function SupplierLeaderboard() {
   return (
     <div className="rounded-xl bg-white border border-slate-200 shadow-sm p-6">
       <div className="flex items-center gap-2 mb-4">
-        <Users className="w-4 h-4 text-cyan-600" />
+        <Users className="w-4 h-4 text-cyan-600" aria-hidden="true" />
         <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Supplier Leaderboard</h2>
         <span className="text-[11px] text-slate-500 ml-auto">Last 30 days</span>
       </div>

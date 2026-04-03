@@ -20,16 +20,28 @@ export function LiveTicker() {
 
   useEffect(() => {
     const FOUR_HOURS_AGO = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
+    const DAY_AGO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    supabase
-      .from('dc_bids')
-      .select('id, product_name, supplier_name, bid_price, created_at, is_winner')
-      .gte('created_at', FOUR_HOURS_AGO)
-      .order('created_at', { ascending: false })
-      .limit(30)
-      .then(({ data, error }) => {
-        if (data) setBids(data as any[]);
-      });
+    async function fetchBids() {
+      let { data } = await supabase
+        .from('dc_bids')
+        .select('id, product_name, supplier_name, bid_price, created_at, is_winner')
+        .gte('created_at', FOUR_HOURS_AGO)
+        .order('created_at', { ascending: false })
+        .limit(30);
+      if (!data || data.length === 0) {
+        // Fallback: extend window to 24h
+        ({ data } = await supabase
+          .from('dc_bids')
+          .select('id, product_name, supplier_name, bid_price, created_at, is_winner')
+          .gte('created_at', DAY_AGO)
+          .order('created_at', { ascending: false })
+          .limit(30));
+      }
+      if (data) setBids(data as any[]);
+    }
+
+    fetchBids();
 
     const channel = supabase
       .channel('ticker')

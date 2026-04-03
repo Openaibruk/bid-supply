@@ -24,20 +24,38 @@ export function PriceCharts() {
 
   useEffect(() => {
     setProductsLoading(true);
+    const fourteenDaysAgo = subDays(new Date(), 14).toISOString();
+    // Fetch products and their recent bid counts in one round trip
     supabase
       .from('products')
       .select('product_id, product_name')
-      .limit(10)
-      .then(({ data, error }) => {
-        setProductsLoading(false);
+      .limit(50) // decent pool to rank
+      .then(async ({ data, error }) => {
         if (error) {
           console.error(error);
+          setProductsLoading(false);
           return;
         }
-        if (data) {
-          setProducts(data.map(p => ({ id: p.product_id, name: p.product_name })));
-          if (data.length > 0) setSelectedProduct(data[0].product_id);
+        if (!data || data.length === 0) {
+          setProductsLoading(false);
+          return;
         }
+        const productIds = data.map(p => p.product_id);
+        // Fetch bid counts per product for last 14 days
+        const { data: bidsData } = await supabase
+          .from('dc_bids')
+          .select('product_id')
+          .gte('created_at', fourteenDaysAgo)
+          .in('product_id', productIds);
+        const counts = new Map<number, number>();
+        (bidsData || []).forEach((b: any) => {
+          counts.set(b.product_id, (counts.get(b.product_id) || 0) + 1);
+        });
+        // Sort products by bid count descending; if none have bids, keep alphabetical
+        const sorted = [...data].sort((a, b) => (counts.get(b.product_id) || 0) - (counts.get(a.product_id) || 0));
+        setProducts(sorted.map(p => ({ id: p.product_id, name: p.product_name })));
+        if (sorted.length > 0) setSelectedProduct(sorted[0].product_id);
+        setProductsLoading(false);
       });
   }, []);
 
@@ -83,7 +101,7 @@ export function PriceCharts() {
     <div className="rounded-xl bg-white border border-slate-200 shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-purple-500" />
+          <TrendingUp className="w-4 h-4 text-purple-500" aria-hidden="true" />
           <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Price Trends</h2>
         </div>
         <div className="flex items-center gap-2">
