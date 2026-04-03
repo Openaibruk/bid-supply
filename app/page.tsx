@@ -1,7 +1,5 @@
 'use client';
 
-'use client';
-
 import './globals.css';
 import { useLang } from '@/contexts/LanguageContext';
 import { LiveTicker } from '@/components/LiveTicker';
@@ -17,7 +15,7 @@ export default function Page() {
   const { t } = useLang();
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen text-slate-900">
       {/* Live ticker */}
       <ErrorBoundary>
         <LiveTicker />

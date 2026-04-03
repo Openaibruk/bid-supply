@@ -9,6 +9,7 @@ export function LanguageToggle() {
     <button
       onClick={() => setLocale(locale === 'am' ? 'en' : 'am')}
       className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition"
+      aria-label={locale === 'am' ? 'Switch to English' : 'Switch to Amharic'}
       title={locale === 'am' ? 'Switch to English' : 'እንግሊዝኛ ይቀይሩ'}
     >
       <span className="text-base">

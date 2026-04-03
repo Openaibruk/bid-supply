@@ -16,46 +16,114 @@ interface Supplier {
 
 export function SupplierLeaderboard() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const thirtyDaysAgo = format(subDays(new Date(), 30), 'yyyy-MM-dd');
-    
+
+    setLoading(true);
     supabase
       .from('dc_suppliers')
-      .select('supplier_id, supplier_name, active')
+      .select('supplier_id, supplier_name')
       .eq('active', true)
-      .then(async ({ data, error }) => {
-        if (error || !data) return;
+      .then(async ({ data: supData, error: supErr }) => {
+        if (supErr) {
+          setError(supErr.message);
+          setLoading(false);
+          return;
+        }
+        if (!supData) {
+          setSuppliers([]);
+          setLoading(false);
+          return;
+        }
 
-        const results = await Promise.all(
-          (data as any[]).map(async (s) => {
-            const { data: bids } = await supabase
-              .from('dc_bids')
-              .select('bid_price, is_winner')
-              .eq('supplier_id', s.supplier_id)
-              .gte('created_at', thirtyDaysAgo);
+        try {
+          const { data: bidsData } = await supabase
+            .from('dc_bids')
+            .select('supplier_id, bid_price, is_winner')
+            .gte('created_at', thirtyDaysAgo);
 
-            const all = bids || [];
-            const wins = all.filter(b => b.is_winner).length;
-            const prices = all.map(b => b.bid_price);
-            const avg = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
+          const bids = bidsData || [];
 
-            return {
-              supplier_id: s.supplier_id,
-              supplier_name: s.supplier_name,
-              total_bids: all.length,
-              wins,
-              win_rate: all.length > 0 ? (wins / all.length) * 100 : 0,
-              avg_price: avg,
-            } as Supplier;
-          })
-        );
+          const agg = new Map<number, { total_bids: number; wins: number; prices: number[] }>();
+          for (const b of bids as any[]) {
+            const sid = b.supplier_id;
+            if (!agg.has(sid)) agg.set(sid, { total_bids: 0, wins: 0, prices: [] });
+            const rec = agg.get(sid)!;
+            rec.total_bids += 1;
+            if (b.is_winner) rec.wins += 1;
+            rec.prices.push(b.bid_price);
+          }
 
-        setSuppliers(results.filter(s => s.total_bids > 0).sort((a, b) => b.wins - a.wins).slice(0, 10));
+          const results: Supplier[] = supData
+            .map((s: any) => {
+              const stats = agg.get(s.supplier_id);
+              if (!stats) return null;
+              const win_rate = stats.total_bids > 0 ? (stats.wins / stats.total_bids) * 100 : 0;
+              const avg = stats.prices.length > 0 ? stats.prices.reduce((a, b) => a + b, 0) / stats.prices.length : 0;
+              return {
+                supplier_id: s.supplier_id,
+                supplier_name: s.supplier_name,
+                total_bids: stats.total_bids,
+                wins: stats.wins,
+                win_rate,
+                avg_price: avg,
+              } as Supplier;
+            })
+            .filter((s): s is Supplier => s !== null)
+            .sort((a, b) => b.wins - a.wins)
+            .slice(0, 10);
+
+          setSuppliers(results);
+        } catch (e: any) {
+          setError(e.message);
+        } finally {
+          setLoading(false);
+        }
       });
   }, []);
 
   const medals = ['🥇', '🥈', '🥉'];
+
+  if (loading) {
+    return (
+      <div className="rounded-xl bg-white border border-slate-200 shadow-sm p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Users className="w-4 h-4 text-slate-300" />
+          <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Supplier Leaderboard</h2>
+        </div>
+        <div className="space-y-2">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 bg-slate-50">
+              <div className="w-8 h-6 bg-slate-200 rounded animate-pulse" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-slate-200 rounded w-3/4 animate-pulse" />
+                <div className="flex gap-4">
+                  <div className="h-3 bg-slate-100 rounded w-12 animate-pulse" />
+                  <div className="h-3 bg-slate-100 rounded w-12 animate-pulse" />
+                </div>
+              </div>
+              <div className="text-right space-y-2">
+                <div className="h-4 bg-slate-200 rounded w-10 ml-auto animate-pulse" />
+                <div className="h-3 bg-slate-100 rounded w-16 ml-auto animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-center">
+        <p className="text-sm font-medium text-red-800 mb-1">Failed to load supplier leaderboard</p>
+        <p className="text-xs text-red-700">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-xl bg-white border border-slate-200 shadow-sm p-6">
@@ -65,13 +133,17 @@ export function SupplierLeaderboard() {
         <span className="text-[11px] text-slate-500 ml-auto">Last 30 days</span>
       </div>
       {suppliers.length === 0 ? (
-        <p className="text-sm text-slate-500 text-center py-8">No supplier data yet</p>
+        <div className="text-center py-8">
+          <Users className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+          <p className="text-sm font-medium text-slate-600">No supplier data yet</p>
+          <p className="text-xs text-slate-500 mt-1">Supplier statistics will appear once bids are recorded</p>
+        </div>
       ) : (
         <div className="space-y-2">
           {suppliers.map((s, i) => (
             <div
               key={s.supplier_id}
-              className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+              className={`flex items-center gap-3 p-3 rounded-lg border transition-colors hover:bg-slate-50 ${
                 i === 0 ? 'bg-amber-50 border-amber-200' :
                 i === 1 ? 'bg-slate-50 border-slate-200' :
                 i === 2 ? 'bg-orange-50 border-orange-200' :

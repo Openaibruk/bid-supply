@@ -18,14 +18,22 @@ export function PriceCharts() {
   const [data, setData] = useState<PriceData[]>([]);
   const [products, setProducts] = useState<{ id: number; name: string }[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [productsLoading, setProductsLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch top products
+    setProductsLoading(true);
     supabase
       .from('products')
       .select('product_id, product_name')
       .limit(10)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        setProductsLoading(false);
+        if (error) {
+          console.error(error);
+          return;
+        }
         if (data) {
           setProducts(data.map(p => ({ id: p.product_id, name: p.product_name })));
           if (data.length > 0) setSelectedProduct(data[0].product_id);
@@ -35,7 +43,8 @@ export function PriceCharts() {
 
   useEffect(() => {
     if (!selectedProduct) return;
-
+    setLoading(true);
+    setError(null);
     const start = subDays(new Date(), 14);
     supabase
       .from('dc_bids')
@@ -43,20 +52,22 @@ export function PriceCharts() {
       .eq('product_id', selectedProduct)
       .gte('created_at', start.toISOString())
       .order('created_at', { ascending: true })
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        setLoading(false);
+        if (error) {
+          setError(error.message);
+          return;
+        }
         if (!data || data.length === 0) {
           setData([]);
           return;
         }
-
-        // Group by date
         const byDate: Record<string, number[]> = {};
         (data as any[]).forEach(b => {
           const date = format(parseISO(b.created_at), 'MM/dd');
           if (!byDate[date]) byDate[date] = [];
           byDate[date].push(b.bid_price);
         });
-
         const result = Object.entries(byDate).map(([date, prices]) => ({
           date,
           minPrice: Math.min(...prices),
@@ -64,7 +75,6 @@ export function PriceCharts() {
           avgPrice: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length),
           bids: prices.length,
         }));
-
         setData(result);
       });
   }, [selectedProduct]);
@@ -76,19 +86,37 @@ export function PriceCharts() {
           <TrendingUp className="w-4 h-4 text-purple-500" />
           <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Price Trends</h2>
         </div>
-        <select
-          value={selectedProduct}
-          onChange={(e) => setSelectedProduct(Number(e.target.value))}
-          className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-        >
-          {products.map(p => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <label htmlFor="product-select" className="sr-only">Select Product</label>
+          <select
+            id="product-select"
+            value={selectedProduct}
+            onChange={(e) => setSelectedProduct(Number(e.target.value))}
+            disabled={productsLoading}
+            className="bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 hover:border-slate-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {products.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {data.length === 0 ? (
-        <p className="text-sm text-slate-500 text-center py-12">No price data available for this product</p>
+      {loading ? (
+        <div className="h-52 flex items-center justify-center">
+          <div className="text-xs text-slate-400 animate-pulse">Loading price data…</div>
+        </div>
+      ) : error ? (
+        <div className="text-center py-8">
+          <p className="text-sm font-medium text-red-800 mb-1">Failed to load price data</p>
+          <p className="text-xs text-red-700">{error}</p>
+        </div>
+      ) : data.length === 0 ? (
+        <div className="text-center py-12">
+          <TrendingUp className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+          <p className="text-sm font-medium text-slate-600">No price data available for this product</p>
+          <p className="text-xs text-slate-500 mt-1">Bids will appear here once suppliers start bidding</p>
+        </div>
       ) : (
         <>
           {/* Price Range Chart */}
