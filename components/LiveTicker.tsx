@@ -66,9 +66,9 @@ export function LiveTicker() {
 
   if (bids.length === 0) {
     return (
-      <div className="border-b border-zinc-800/60 bg-zinc-900/30 py-2 overflow-hidden">
+      <div className="border-b border-slate-200 bg-slate-50 py-2 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <span className="text-xs text-zinc-600">No recent bids to display</span>
+          <span className="text-xs text-slate-500">No recent bids to display</span>
         </div>
       </div>
     );
@@ -78,7 +78,7 @@ export function LiveTicker() {
   const items = [...bids, ...bids];
 
   return (
-    <div className="border-b border-zinc-800/60 bg-zinc-900/30 py-2 overflow-hidden">
+    <div className="border-b border-slate-200 bg-slate-50 py-2 overflow-hidden">
       <div
         className="flex gap-8 whitespace-nowrap"
         style={{
@@ -89,16 +89,16 @@ export function LiveTicker() {
         {items.map((bid, i) => (
           <div key={`${bid.id}-${i}`} className="flex items-center gap-2 text-sm shrink-0">
             {bid.is_winner ? (
-              <span className="text-green-400">🏆</span>
+              <span className="text-green-600">🏆</span>
             ) : (
               <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
             )}
-            <span className="text-zinc-300 font-medium">{bid.product_name}</span>
-            <span className="text-zinc-500">—</span>
-            <span className="text-zinc-300">{bid.bid_price.toLocaleString()} ETB</span>
-            <span className="text-zinc-600">|</span>
-            <span className="text-zinc-500 text-xs">{bid.supplier_name}</span>
-            <span className="text-zinc-600 text-xs">
+            <span className="text-slate-900 font-medium">{bid.product_name}</span>
+            <span className="text-slate-400">—</span>
+            <span className="text-slate-900">{bid.bid_price.toLocaleString()} ETB</span>
+            <span className="text-slate-300">|</span>
+            <span className="text-slate-500 text-xs">{bid.supplier_name}</span>
+            <span className="text-slate-500 text-xs">
               {format(parseISO(bid.created_at), 'HH:mm')}
             </span>
           </div>

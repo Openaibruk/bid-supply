@@ -34,21 +34,21 @@ export function ActiveCycles() {
 
   if (cycles.length === 0) {
     return (
-      <div className="rounded-xl bg-zinc-900/60 border border-zinc-800/60 p-6">
+      <div className="rounded-xl bg-white border border-slate-200 shadow-sm p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Calendar className="w-4 h-4 text-zinc-500" />
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Active Cycles</h2>
+          <Calendar className="w-4 h-4 text-slate-500" />
+          <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Active Cycles</h2>
         </div>
-        <p className="text-sm text-zinc-600 text-center py-8">No active cycles right now</p>
+        <p className="text-sm text-slate-500 text-center py-8">No active cycles right now</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl bg-zinc-900/60 border border-zinc-800/60 p-6">
+    <div className="rounded-xl bg-white border border-slate-200 shadow-sm p-6">
       <div className="flex items-center gap-2 mb-4">
-        <Calendar className="w-4 h-4 text-indigo-400" />
-        <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Active Cycles</h2>
+        <Calendar className="w-4 h-4 text-indigo-500" />
+        <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Active Cycles</h2>
       </div>
       <div className="space-y-3">
         {cycles.map((cycle) => {
@@ -58,21 +58,21 @@ export function ActiveCycles() {
           const progress = totalDays > 0 ? (daysPassed / totalDays) * 100 : 0;
 
           return (
-            <div key={cycle.cycle_id} className="p-3 rounded-lg bg-zinc-800/40 border border-zinc-800/60">
+            <div key={cycle.cycle_id} className="p-3 rounded-lg bg-slate-50 border border-slate-200">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium">{cycle.cycle_name}</p>
-                <span className="flex items-center gap-1 text-xs text-indigo-400">
+                <p className="text-sm font-medium text-slate-900">{cycle.cycle_name}</p>
+                <span className="flex items-center gap-1 text-xs text-indigo-600">
                   <Clock className="w-3 h-3" />
                   {daysLeft}d left
                 </span>
               </div>
-              <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all"
                   style={{ width: `${Math.min(100, progress)}%` }}
                 />
               </div>
-              <p className="text-[11px] text-zinc-500 mt-1">
+              <p className="text-[11px] text-slate-500 mt-1">
                 {format(new Date(cycle.starts_at), 'MMM dd')} — {format(new Date(cycle.ends_at), 'MMM dd, yyyy')}
               </p>
             </div>

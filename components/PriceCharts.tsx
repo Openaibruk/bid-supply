@@ -70,16 +70,16 @@ export function PriceCharts() {
   }, [selectedProduct]);
 
   return (
-    <div className="rounded-xl bg-zinc-900/60 border border-zinc-800/60 p-6">
+    <div className="rounded-xl bg-white border border-slate-200 shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-purple-400" />
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Price Trends</h2>
+          <TrendingUp className="w-4 h-4 text-purple-500" />
+          <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Price Trends</h2>
         </div>
         <select
           value={selectedProduct}
           onChange={(e) => setSelectedProduct(Number(e.target.value))}
-          className="bg-zinc-800 border border-zinc-700/60 rounded-lg px-3 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-indigo-500"
+          className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
         >
           {products.map(p => (
             <option key={p.id} value={p.id}>{p.name}</option>
@@ -88,27 +88,27 @@ export function PriceCharts() {
       </div>
 
       {data.length === 0 ? (
-        <p className="text-sm text-zinc-600 text-center py-12">No price data available for this product</p>
+        <p className="text-sm text-slate-500 text-center py-12">No price data available for this product</p>
       ) : (
         <>
           {/* Price Range Chart */}
           <div className="h-52 mb-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f1f2e" />
-                <XAxis dataKey="date" tick={{ fill: '#6b6b7b', fontSize: 11 }} />
-                <YAxis tick={{ fill: '#6b6b7b', fontSize: 11 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="date" tick={{ fill: '#475569', fontSize: 11 }} />
+                <YAxis tick={{ fill: '#475569', fontSize: 11 }} />
                 <Tooltip
                   contentStyle={{
-                    background: '#18181f',
-                    border: '1px solid #2a2a3a',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '8px',
                     fontSize: '12px',
-                    color: '#e0e0e0',
+                    color: '#0f172a',
                   }}
                   formatter={(value: any) => [`${Math.round(value).toLocaleString()} ETB`, '']}
                 />
-                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
+                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px', color: '#475569' }} />
                 <Bar dataKey="minPrice" name="Min" fill="#6366f1" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="maxPrice" name="Max" fill="#a855f7" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="avgPrice" name="Avg" fill="#22c55e" radius={[4, 4, 0, 0]} />
@@ -120,16 +120,16 @@ export function PriceCharts() {
           <div className="h-32">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f1f2e" />
-                <XAxis dataKey="date" tick={{ fill: '#6b6b7b', fontSize: 11 }} />
-                <YAxis tick={{ fill: '#6b6b7b', fontSize: 11 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="date" tick={{ fill: '#475569', fontSize: 11 }} />
+                <YAxis tick={{ fill: '#475569', fontSize: 11 }} />
                 <Tooltip
                   contentStyle={{
-                    background: '#18181f',
-                    border: '1px solid #2a2a3a',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '8px',
                     fontSize: '12px',
-                    color: '#e0e0e0',
+                    color: '#0f172a',
                   }}
                   formatter={(value: any) => [value, '']}
                 />

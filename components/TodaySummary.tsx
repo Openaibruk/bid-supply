@@ -59,15 +59,15 @@ export function TodaySummary() {
       {cards.map((c) => (
         <div
           key={c.label}
-          className="rounded-xl bg-zinc-900/60 border border-zinc-800/60 p-4 hover:border-zinc-700/60 transition-colors"
+          className="rounded-xl bg-white border border-slate-200 shadow-sm p-4 hover:border-slate-300 transition-colors"
         >
           <div className="flex items-center gap-2 mb-2">
-            <div className={`p-1.5 rounded-lg ${c.bg}`}>
-              <c.icon className={`w-3.5 h-3.5 ${c.color}`} />
+            <div className={`p-1.5 rounded-lg ${c.bg.replace('500/10', '100')}`}>
+              <c.icon className={`w-3.5 h-3.5 ${c.color.replace('400', '600')}`} />
             </div>
-            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">{c.label}</span>
+            <span className="text-[11px] font-medium text-slate-600 uppercase tracking-wider">{c.label}</span>
           </div>
-          <p className="text-xl font-bold tracking-tight">{c.value}</p>
+          <p className="text-xl font-bold tracking-tight text-slate-900">{c.value}</p>
         </div>
       ))}
     </div>

@@ -64,32 +64,32 @@ export function WinnerFeed() {
   }
 
   return (
-    <div className="rounded-xl bg-zinc-900/60 border border-zinc-800/60 p-6">
+    <div className="rounded-xl bg-white border border-slate-200 shadow-sm p-6">
       <div className="flex items-center gap-2 mb-4">
-        <Trophy className="w-4 h-4 text-amber-400" />
-        <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Recent Winners</h2>
+        <Trophy className="w-4 h-4 text-amber-500" />
+        <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Recent Winners</h2>
       </div>
       {winners.length === 0 ? (
-        <p className="text-sm text-zinc-600 text-center py-8">No winners yet today</p>
+        <p className="text-sm text-slate-500 text-center py-8">No winners yet today</p>
       ) : (
         <div className="space-y-2">
           {winners.map((w) => (
             <div
               key={w.id}
-              className="slide-in flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30 border border-zinc-800/40 hover:bg-zinc-800/50 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors"
             >
-              <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
-                <Trophy className="w-3.5 h-3.5 text-amber-400" />
+              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                <Trophy className="w-3.5 h-3.5 text-amber-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-zinc-200 truncate">{w.product_name}</p>
-                <p className="text-xs text-zinc-500 truncate">
+                <p className="text-sm font-medium text-slate-900 truncate">{w.product_name}</p>
+                <p className="text-xs text-slate-500 truncate">
                   {w.supplier_name}{w.volume ? ` • ${w.volume}kg` : ''}
                 </p>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-sm font-bold text-amber-400">{w.bid_price.toLocaleString()} ETB</p>
-                <p className="text-[11px] text-zinc-600">
+                <p className="text-sm font-bold text-amber-600">{w.bid_price.toLocaleString()} ETB</p>
+                <p className="text-xs text-slate-500">
                   {format(parseISO(w.created_at), 'HH:mm')}
                 </p>
               </div>
